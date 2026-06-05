@@ -11,10 +11,12 @@ export default function ClickOverlay({ clickPoint, isGenerating, intent, onCance
           className="water-ripple"
           style={{ left: clickPoint.x, top: clickPoint.y }}
         >
+          <span className="water-ripple__splash" />
           <span className="water-ripple__drop" />
           <span className="water-ripple__wave water-ripple__wave--1" />
           <span className="water-ripple__wave water-ripple__wave--2" />
           <span className="water-ripple__wave water-ripple__wave--3" />
+          <span className="water-ripple__wave water-ripple__wave--4" />
         </div>
       )}
 
