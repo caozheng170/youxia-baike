@@ -108,6 +108,8 @@ const WaterRippleImage = forwardRef(function WaterRippleImage(
   const ripplesRef = useRef([]);
   const rafRef = useRef(null);
   const sustainRef = useRef(false);
+  const sustainPointRef = useRef(null);
+  const pendingStopRef = useRef(false);
   const [useFallback, setUseFallback] = useState(false);
   const [aspectRatio, setAspectRatio] = useState('16 / 9');
 
@@ -116,16 +118,9 @@ const WaterRippleImage = forwardRef(function WaterRippleImage(
       (canvasRef.current || wrapRef.current || fallbackRef.current)?.getBoundingClientRect(),
   }));
 
-  const clearRipples = useCallback(() => {
-    ripplesRef.current = [];
-    if (rafRef.current) {
-      cancelAnimationFrame(rafRef.current);
-      rafRef.current = null;
-    }
-  }, []);
-
   const addRipple = useCallback((nx, ny) => {
     const now = performance.now();
+    sustainPointRef.current = { x: nx, y: ny };
     ripplesRef.current = [
       ...ripplesRef.current.slice(-(MAX_RIPPLES - 1)),
       { x: nx, y: ny, start: now },
@@ -172,8 +167,22 @@ const WaterRippleImage = forwardRef(function WaterRippleImage(
 
     const now = performance.now();
     const sustaining = sustainRef.current;
+    const fadeLimit = pendingStopRef.current ? 2.0 : 3.5;
 
-    ripplesRef.current = ripplesRef.current.filter((r) => (now - r.start) / 1000 < 2.5);
+    ripplesRef.current = ripplesRef.current.filter((r) => (now - r.start) / 1000 < fadeLimit);
+
+    // While waiting for the new image, keep gentle pulses at the click point.
+    if (sustaining && sustainPointRef.current) {
+      const last = ripplesRef.current[ripplesRef.current.length - 1];
+      const since = last ? now - last.start : Infinity;
+      if (since > 1100) {
+        const p = sustainPointRef.current;
+        ripplesRef.current.push({ x: p.x, y: p.y, start: now });
+        if (ripplesRef.current.length > MAX_RIPPLES) {
+          ripplesRef.current = ripplesRef.current.slice(-MAX_RIPPLES);
+        }
+      }
+    }
 
     const count = ripplesRef.current.length;
     const positions = new Float32Array(MAX_RIPPLES * 2);
@@ -196,11 +205,13 @@ const WaterRippleImage = forwardRef(function WaterRippleImage(
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
     const stillActive =
-      count > 0 && ripplesRef.current.some((r) => (now - r.start) / 1000 < 2.2);
+      count > 0 && ripplesRef.current.some((r) => (now - r.start) / 1000 < fadeLimit - 0.2);
     if (stillActive || sustaining) {
       rafRef.current = requestAnimationFrame(draw);
     } else {
       rafRef.current = null;
+      pendingStopRef.current = false;
+      sustainPointRef.current = null;
     }
   }, []);
 
@@ -211,12 +222,17 @@ const WaterRippleImage = forwardRef(function WaterRippleImage(
   }, [draw]);
 
   useEffect(() => {
+    const wasSustaining = sustainRef.current;
     sustainRef.current = sustainRipple;
-    if (!sustainRipple) {
-      clearRipples();
-      draw();
+    if (wasSustaining && !sustainRipple) {
+      // Generation done — let the last ripple fade on the new image, don't cut abruptly.
+      pendingStopRef.current = true;
+      startLoop();
+    } else if (sustainRipple) {
+      pendingStopRef.current = false;
+      startLoop();
     }
-  }, [sustainRipple, clearRipples, draw]);
+  }, [sustainRipple, startLoop]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -269,8 +285,6 @@ const WaterRippleImage = forwardRef(function WaterRippleImage(
   useEffect(() => {
     if (!src || useFallback) return;
 
-    clearRipples();
-
     const img = new Image();
     if (!src.startsWith('data:')) {
       img.crossOrigin = 'anonymous';
@@ -282,11 +296,12 @@ const WaterRippleImage = forwardRef(function WaterRippleImage(
       requestAnimationFrame(() => {
         resizeCanvas();
         draw();
+        startLoop();
       });
     };
     img.onerror = () => setUseFallback(true);
     img.src = src;
-  }, [src, useFallback, loadTexture, resizeCanvas, draw, clearRipples]);
+  }, [src, useFallback, loadTexture, resizeCanvas, draw, startLoop]);
 
   useEffect(() => {
     const wrap = wrapRef.current;
