@@ -1,0 +1,31 @@
+.water-ripple-image {
+  display: block;
+  width: 100%;
+  cursor: pointer;
+  position: relative;
+  line-height: 0;
+}
+
+.water-ripple-image.disabled {
+  cursor: wait;
+  opacity: 0.88;
+}
+
+.water-ripple-image__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* When className includes preview/full from page-image, inherit transitions */
+.water-ripple-image.page-image.preview {
+  filter: blur(1px) brightness(0.98);
+}
+
+.water-ripple-image.page-image.full {
+  filter: none;
+}
+
+.water-ripple-image.page-image.generating {
+  opacity: 0.92;
+}

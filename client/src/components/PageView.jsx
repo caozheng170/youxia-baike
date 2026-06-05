@@ -1,5 +1,6 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 import ClickOverlay from './ClickOverlay';
+import WaterRippleImage from './WaterRippleImage';
 import './PageView.css';
 
 export default function PageView({
@@ -19,25 +20,22 @@ export default function PageView({
   }, [isGenerating]);
 
   const handleClick = useCallback(
-    (e) => {
+    (e, nx, ny) => {
       if (isGenerating || !page?.id) return;
 
       const rect = imgRef.current?.getBoundingClientRect();
       if (!rect) return;
 
-      const x = (e.clientX - rect.left) / rect.width;
-      const y = (e.clientY - rect.top) / rect.height;
+      const x = nx ?? (e.clientX - rect.left) / rect.width;
+      const y = ny ?? (e.clientY - rect.top) / rect.height;
 
-      // Mark the click point (stays during loading, shows the intent card).
-      // fx/fy are normalized (0-1) so the overlay can flip the card near edges.
       setClickPoint({
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
+        x: x * rect.width,
+        y: y * rect.height,
         fx: x,
         fy: y,
       });
 
-      // Trigger exploration
       onExplore(page.id, x, y);
     },
     [isGenerating, page?.id, onExplore]
@@ -90,18 +88,17 @@ export default function PageView({
     );
   }
 
-  const isUrl = page.image && !page.image.startsWith('data:');
-
   return (
     <div className="page-view">
       <div className="page-image-container">
-        <img
+        <WaterRippleImage
           ref={imgRef}
           src={page.image}
           alt={page.query}
           className={`page-image ${isPreview ? 'preview' : 'full'} ${isGenerating ? 'generating' : ''}`}
+          disabled={isGenerating}
+          sustainRipple={isGenerating && !!clickPoint}
           onClick={handleClick}
-          draggable={false}
         />
         <ClickOverlay
           clickPoint={clickPoint}

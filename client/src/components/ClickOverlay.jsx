@@ -6,20 +6,6 @@ export default function ClickOverlay({ clickPoint, isGenerating, intent, onCance
 
   return (
     <div className="click-overlay">
-      {clickPoint && (
-        <div
-          className="water-ripple"
-          style={{ left: clickPoint.x, top: clickPoint.y }}
-        >
-          <span className="water-ripple__splash" />
-          <span className="water-ripple__drop" />
-          <span className="water-ripple__wave water-ripple__wave--1" />
-          <span className="water-ripple__wave water-ripple__wave--2" />
-          <span className="water-ripple__wave water-ripple__wave--3" />
-          <span className="water-ripple__wave water-ripple__wave--4" />
-        </div>
-      )}
-
       {isGenerating && clickPoint && (
         <div
           className="intent-card"
