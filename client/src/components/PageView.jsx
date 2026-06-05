@@ -30,8 +30,8 @@ export default function PageView({
       const y = ny ?? (e.clientY - rect.top) / rect.height;
 
       setClickPoint({
-        x: x * rect.width,
-        y: y * rect.height,
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
         fx: x,
         fy: y,
       });

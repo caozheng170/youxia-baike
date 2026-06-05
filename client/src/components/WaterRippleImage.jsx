@@ -8,7 +8,9 @@ import React, {
 } from 'react';
 import './WaterRippleImage.css';
 
-const MAX_RIPPLES = 8;
+const MAX_RIPPLES = 4;
+// ~1/5 image area => pi * r^2 = 0.2 => r ~= 0.25 in UV space
+const RIPPLE_RADIUS = 0.25;
 
 const VERTEX_SHADER = `
   attribute vec2 a_position;
@@ -26,18 +28,18 @@ const FRAGMENT_SHADER = `
   uniform vec2 u_ripples[${MAX_RIPPLES}];
   uniform float u_times[${MAX_RIPPLES}];
   uniform int u_count;
-  uniform float u_boost;
   varying vec2 v_texCoord;
 
   vec2 rippleOffset(vec2 uv, vec2 origin, float t) {
     vec2 delta = uv - origin;
     float dist = length(delta);
-    if (dist < 0.0005) return vec2(0.0);
+    if (dist < 0.0005 || dist > ${RIPPLE_RADIUS.toFixed(2)}) return vec2(0.0);
+
     vec2 dir = delta / dist;
-    float rings = sin(dist * 52.0 - t * 11.0);
-    float envelope = exp(-dist * 4.2) * exp(-t * (0.9 + u_boost * -0.55));
-    float amp = 0.042 + u_boost * 0.022;
-    return dir * rings * envelope * amp;
+    float rings = sin(dist * 58.0 - t * 12.0);
+    float edge = 1.0 - smoothstep(${RIPPLE_RADIUS.toFixed(2)} * 0.55, ${RIPPLE_RADIUS.toFixed(2)}, dist);
+    float envelope = edge * exp(-dist * 14.0) * exp(-t * 2.8);
+    return dir * rings * envelope * 0.022;
   }
 
   void main() {
@@ -75,6 +77,14 @@ function createProgram(gl, vs, fs) {
   return program;
 }
 
+function getClickUV(e, canvas) {
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: (e.clientX - rect.left) / rect.width,
+    y: (e.clientY - rect.top) / rect.height,
+  };
+}
+
 /**
  * Image as a water surface — click disturbs the image with real UV warping.
  */
@@ -97,14 +107,22 @@ const WaterRippleImage = forwardRef(function WaterRippleImage(
   const textureRef = useRef(null);
   const ripplesRef = useRef([]);
   const rafRef = useRef(null);
-  const boostRef = useRef(0);
+  const sustainRef = useRef(false);
   const [useFallback, setUseFallback] = useState(false);
   const [aspectRatio, setAspectRatio] = useState('16 / 9');
 
   useImperativeHandle(ref, () => ({
     getBoundingClientRect: () =>
-      (wrapRef.current || fallbackRef.current)?.getBoundingClientRect(),
+      (canvasRef.current || wrapRef.current || fallbackRef.current)?.getBoundingClientRect(),
   }));
+
+  const clearRipples = useCallback(() => {
+    ripplesRef.current = [];
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+  }, []);
 
   const addRipple = useCallback((nx, ny) => {
     const now = performance.now();
@@ -153,26 +171,16 @@ const WaterRippleImage = forwardRef(function WaterRippleImage(
     if (!gl || !program || !textureRef.current) return;
 
     const now = performance.now();
-    boostRef.current = sustainRipple ? 1 : 0;
+    const sustaining = sustainRef.current;
 
-    ripplesRef.current = ripplesRef.current.filter((r) => (now - r.start) / 1000 < 6);
-
-    if (sustainRipple && ripplesRef.current.length > 0) {
-      const last = ripplesRef.current[ripplesRef.current.length - 1];
-      if (now - last.start > 1400) {
-        ripplesRef.current.push({ x: last.x, y: last.y, start: now });
-        if (ripplesRef.current.length > MAX_RIPPLES) {
-          ripplesRef.current = ripplesRef.current.slice(-MAX_RIPPLES);
-        }
-      }
-    }
+    ripplesRef.current = ripplesRef.current.filter((r) => (now - r.start) / 1000 < 2.5);
 
     const count = ripplesRef.current.length;
     const positions = new Float32Array(MAX_RIPPLES * 2);
     const times = new Float32Array(MAX_RIPPLES);
     ripplesRef.current.forEach((r, i) => {
       positions[i * 2] = r.x;
-      positions[i * 2 + 1] = 1 - r.y;
+      positions[i * 2 + 1] = r.y;
       times[i] = (now - r.start) / 1000;
     });
 
@@ -184,24 +192,31 @@ const WaterRippleImage = forwardRef(function WaterRippleImage(
     gl.uniform2fv(gl.getUniformLocation(program, 'u_ripples'), positions);
     gl.uniform1fv(gl.getUniformLocation(program, 'u_times'), times);
     gl.uniform1i(gl.getUniformLocation(program, 'u_count'), count);
-    gl.uniform1f(gl.getUniformLocation(program, 'u_boost'), boostRef.current);
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
     const stillActive =
-      count > 0 && ripplesRef.current.some((r) => (now - r.start) / 1000 < 5.5);
-    if (stillActive || sustainRipple) {
+      count > 0 && ripplesRef.current.some((r) => (now - r.start) / 1000 < 2.2);
+    if (stillActive || sustaining) {
       rafRef.current = requestAnimationFrame(draw);
     } else {
       rafRef.current = null;
     }
-  }, [sustainRipple]);
+  }, []);
 
   const startLoop = useCallback(() => {
     if (!rafRef.current) {
       rafRef.current = requestAnimationFrame(draw);
     }
   }, [draw]);
+
+  useEffect(() => {
+    sustainRef.current = sustainRipple;
+    if (!sustainRipple) {
+      clearRipples();
+      draw();
+    }
+  }, [sustainRipple, clearRipples, draw]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -254,6 +269,8 @@ const WaterRippleImage = forwardRef(function WaterRippleImage(
   useEffect(() => {
     if (!src || useFallback) return;
 
+    clearRipples();
+
     const img = new Image();
     if (!src.startsWith('data:')) {
       img.crossOrigin = 'anonymous';
@@ -269,7 +286,7 @@ const WaterRippleImage = forwardRef(function WaterRippleImage(
     };
     img.onerror = () => setUseFallback(true);
     img.src = src;
-  }, [src, useFallback, loadTexture, resizeCanvas, draw]);
+  }, [src, useFallback, loadTexture, resizeCanvas, draw, clearRipples]);
 
   useEffect(() => {
     const wrap = wrapRef.current;
@@ -282,16 +299,12 @@ const WaterRippleImage = forwardRef(function WaterRippleImage(
     return () => ro.disconnect();
   }, [useFallback, resizeCanvas, draw]);
 
-  useEffect(() => {
-    if (sustainRipple && !useFallback) startLoop();
-  }, [sustainRipple, useFallback, startLoop]);
-
   const handleClick = (e) => {
     if (disabled) return;
-    const rect = (wrapRef.current || fallbackRef.current)?.getBoundingClientRect();
-    if (!rect) return;
-    const nx = (e.clientX - rect.left) / rect.width;
-    const ny = (e.clientY - rect.top) / rect.height;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const { x: nx, y: ny } = getClickUV(e, canvas);
     if (!useFallback) {
       addRipple(nx, ny);
       startLoop();
@@ -306,7 +319,12 @@ const WaterRippleImage = forwardRef(function WaterRippleImage(
         src={src}
         alt={alt}
         className={className}
-        onClick={handleClick}
+        onClick={(e) => {
+          if (disabled) return;
+          const rect = fallbackRef.current?.getBoundingClientRect();
+          if (!rect) return;
+          onClick?.(e, (e.clientX - rect.left) / rect.width, (e.clientY - rect.top) / rect.height);
+        }}
         draggable={false}
       />
     );
