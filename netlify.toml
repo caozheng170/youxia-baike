@@ -1,0 +1,14 @@
+# Frontend deploy config for Netlify.
+# IMPORTANT: in Netlify → Site settings → Environment variables, set
+#   VITE_API_BASE = https://your-backend-origin   (e.g. https://your-space.hf.space)
+# so the built frontend talks to your deployed backend.
+[build]
+  base = "client"
+  command = "npm run build"
+  publish = "dist"
+
+# Single-page app fallback.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

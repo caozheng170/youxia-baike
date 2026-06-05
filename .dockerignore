@@ -1,0 +1,11 @@
+# Keep the backend image small: only server/ + requirements are needed.
+.git/
+.venv/
+client/
+data/
+**/__pycache__/
+*.pyc
+*.md
+.env
+.env.*
+netlify.toml

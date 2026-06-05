@@ -1,0 +1,16 @@
+# Secrets / local config
+.env
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Node
+client/node_modules/
+client/dist/
+
+# Generated page data
+data/pages/*.json
+data/pages/images/
+data/pages/previews/

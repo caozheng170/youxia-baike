@@ -1,0 +1,137 @@
+.page-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 24px 24px;
+  overflow: hidden;
+}
+
+.page-view.empty {
+  justify-content: center;
+}
+
+.empty-content {
+  text-align: center;
+  color: #6B5335;
+  max-width: 480px;
+}
+
+.empty-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.empty-content h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #4A3728;
+  margin: 0 0 8px;
+}
+
+.empty-content p {
+  font-size: 15px;
+  color: #8B7355;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.empty-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.suggestion-chip {
+  padding: 6px 14px;
+  background: rgba(139, 111, 71, 0.1);
+  border: 1px solid rgba(139, 111, 71, 0.2);
+  border-radius: 20px;
+  font-size: 13px;
+  color: #6B5335;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.suggestion-chip:hover {
+  background: rgba(139, 111, 71, 0.2);
+  border-color: rgba(139, 111, 71, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Image container */
+.page-image-container {
+  position: relative;
+  width: 100%;
+  max-width: 960px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(74, 55, 40, 0.12), 0 1px 4px rgba(74, 55, 40, 0.08);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.page-image {
+  width: 100%;
+  display: block;
+  cursor: pointer;
+  transition: filter 0.3s, transform 0.2s;
+}
+
+.page-image:hover {
+  filter: brightness(1.02);
+}
+
+.page-image.preview {
+  filter: blur(1px) brightness(0.98);
+}
+
+.page-image.full {
+  filter: none;
+}
+
+.page-image.generating {
+  opacity: 0.85;
+}
+
+/* Click hint */
+.click-hint {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(74, 55, 40, 0.8);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+  white-space: nowrap;
+}
+
+.page-image-container:hover .click-hint {
+  opacity: 1;
+}
+
+/* Page query label */
+.page-query-label {
+  margin-top: 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: #8B7355;
+  text-align: center;
+  max-width: 600px;
+  line-height: 1.4;
+}

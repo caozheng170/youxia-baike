@@ -1,0 +1,132 @@
+.provider-switch-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.provider-switch-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: #8B7355;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.provider-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgba(139, 111, 71, 0.12);
+  border: 1px solid rgba(139, 111, 71, 0.25);
+}
+
+.provider-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: none;
+  background: transparent;
+  color: #8B7355;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  padding: 5px 13px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, transform 0.1s ease;
+  white-space: nowrap;
+}
+
+.provider-option:hover:not(.active):not(:disabled) {
+  color: #4A3728;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.provider-option:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+/* Active (selected) state — strong, unmistakable contrast */
+.provider-option.active {
+  background: #6E4B2A;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(74, 55, 40, 0.35), inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+.provider-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ffd9a0;
+  box-shadow: 0 0 5px rgba(255, 217, 160, 0.9);
+}
+
+.provider-option.pending {
+  background: rgba(139, 111, 71, 0.25);
+  color: #6E4B2A;
+}
+
+.provider-option:disabled {
+  cursor: default;
+}
+
+.provider-option:disabled:not(.active):not(.pending) {
+  opacity: 0.5;
+}
+
+/* ── Toast ────────────────────────────────────────────── */
+.provider-toast {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 6px 18px rgba(74, 55, 40, 0.25);
+  animation: provider-toast-in 0.22s ease-out;
+}
+
+.provider-toast.success {
+  background: #2f7d4f;
+  color: #f3fff7;
+}
+
+.provider-toast.error {
+  background: #b3402f;
+  color: #fff;
+}
+
+@keyframes provider-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 640px) {
+  .provider-switch-label {
+    display: none;
+  }
+
+  .provider-option {
+    padding: 4px 10px;
+    font-size: 11px;
+  }
+
+  .provider-toast {
+    font-size: 12px;
+    padding: 7px 12px;
+  }
+}
