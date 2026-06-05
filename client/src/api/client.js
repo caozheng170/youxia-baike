@@ -1,9 +1,24 @@
 /** API client for Flipbook backend. */
 
-// In dev, leave VITE_API_BASE empty so requests hit `/api` and go through the Vite proxy.
-// In production (e.g. Netlify), set VITE_API_BASE to the backend origin,
-// e.g. https://your-backend.hf.space — requests then go to that origin's /api.
-export const API_BASE = `${import.meta.env.VITE_API_BASE || ''}/api`;
+// Resolve backend origin:
+// 1) VITE_API_BASE from build-time env (Netlify / local .env)
+// 2) Production fallback when the env was missing from a Netlify build
+//    (Vite bakes VITE_* at build time — adding the var in UI after deploy has no effect
+//     until you "Clear cache and deploy" again)
+function resolveApiOrigin() {
+  const fromEnv = (import.meta.env.VITE_API_BASE || '').replace(/\/$/, '');
+  if (fromEnv) return fromEnv;
+
+  if (import.meta.env.PROD && typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    if (host !== 'localhost' && host !== '127.0.0.1') {
+      return 'https://caozheng-youxia.hf.space';
+    }
+  }
+  return '';
+}
+
+export const API_BASE = `${resolveApiOrigin()}/api`;
 
 /**
  * Generate a new page from a query. Returns an event source for SSE.

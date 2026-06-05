@@ -7,6 +7,10 @@
   command = "npm run build"
   publish = "dist"
 
+# Baked into every Netlify build so VITE_API_BASE is never empty even if UI env is missed.
+[build.environment]
+  VITE_API_BASE = "https://caozheng-youxia.hf.space"
+
 # Single-page app fallback.
 [[redirects]]
   from = "/*"
