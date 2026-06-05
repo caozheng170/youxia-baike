@@ -44,6 +44,26 @@ export default function PageView({
   );
 
   if (!page) {
+    if (isGenerating) {
+      return (
+        <div className="page-view empty">
+          <div className="creating-content">
+            <div className="creating-icon" aria-hidden="true">
+              <span className="creating-ring" />
+              <span className="creating-ring creating-ring--delay" />
+              <span className="creating-core">✦</span>
+            </div>
+            <h2 className="creating-title">Creating image…</h2>
+            <p className="creating-subtitle">Waiting for the AI to paint your page</p>
+            <div className="creating-progress" role="progressbar" aria-label="Generating image">
+              <div className="creating-progress-bar" />
+            </div>
+            <p className="creating-hint">This may take up to a minute</p>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="page-view empty">
         <div className="empty-content">
@@ -53,7 +73,6 @@ export default function PageView({
           <div className="empty-suggestions">
             {['Solar System', 'Coffee Making', 'Quantum Physics', 'Human Brain', 'Jazz Music'].map((s) => (
               <span key={s} className="suggestion-chip" onClick={() => {
-                // Find the search input and set its value
                 const input = document.querySelector('.search-input');
                 if (input) {
                   const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;

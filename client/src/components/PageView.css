@@ -69,6 +69,105 @@
   transform: translateY(-1px);
 }
 
+/* Homepage generating state */
+.creating-content {
+  text-align: center;
+  color: #6B5335;
+  max-width: 420px;
+  width: 100%;
+  padding: 0 16px;
+}
+
+.creating-icon {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 24px;
+}
+
+.creating-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(100, 160, 190, 0.35);
+  animation: creating-pulse 2.4s ease-out infinite;
+}
+
+.creating-ring--delay {
+  animation-delay: 1.2s;
+}
+
+.creating-core {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: rgba(90, 150, 180, 0.85);
+  animation: creating-twinkle 1.8s ease-in-out infinite;
+}
+
+@keyframes creating-pulse {
+  0% { transform: scale(0.6); opacity: 0.9; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+
+@keyframes creating-twinkle {
+  0%, 100% { opacity: 0.5; transform: scale(0.95); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+.creating-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #4A3728;
+  margin: 0 0 8px;
+}
+
+.creating-subtitle {
+  font-size: 15px;
+  color: #8B7355;
+  margin: 0 0 28px;
+  line-height: 1.5;
+}
+
+.creating-progress {
+  width: 100%;
+  height: 6px;
+  background: rgba(139, 111, 71, 0.12);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+.creating-progress-bar {
+  height: 100%;
+  width: 40%;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    rgba(100, 160, 190, 0.2),
+    rgba(100, 160, 190, 0.75),
+    rgba(139, 111, 71, 0.6),
+    rgba(100, 160, 190, 0.2)
+  );
+  background-size: 200% 100%;
+  animation: creating-bar 2s ease-in-out infinite;
+}
+
+@keyframes creating-bar {
+  0% { transform: translateX(-120%); background-position: 0% 50%; }
+  100% { transform: translateX(320%); background-position: 100% 50%; }
+}
+
+.creating-hint {
+  font-size: 13px;
+  color: #B8A090;
+  margin: 0;
+}
+
 /* Image container */
 .page-image-container {
   position: relative;

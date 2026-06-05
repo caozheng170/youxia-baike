@@ -3,7 +3,6 @@ import SearchBar from './components/SearchBar';
 import PageView from './components/PageView';
 import ClickOverlay from './components/ClickOverlay';
 import ActionBar from './components/ActionBar';
-import ProviderSwitch from './components/ProviderSwitch';
 import { usePageGenerator } from './hooks/usePageGenerator';
 import './App.css';
 
@@ -23,22 +22,14 @@ export default function App() {
   } = usePageGenerator();
 
   // Selected model source, remembered locally and sent with each request.
-  const [provider, setProvider] = useState(() => {
+  // Provider stays in localStorage; UI switch is hidden on the public site.
+  const [provider] = useState(() => {
     try {
-      return localStorage.getItem('provider') || null;
+      return localStorage.getItem('provider') || 'cloud';
     } catch {
-      return null;
+      return 'cloud';
     }
   });
-
-  const handleProviderChange = (p) => {
-    setProvider(p);
-    try {
-      localStorage.setItem('provider', p);
-    } catch {
-      /* ignore */
-    }
-  };
 
   const handleSearch = (query) => {
     generate(query, provider);
@@ -59,7 +50,6 @@ export default function App() {
           <span className="app-logo">📖</span>
           <h1 className="app-title">游侠百科</h1>
         </div>
-        <ProviderSwitch value={provider} onChange={handleProviderChange} />
       </header>
 
       <SearchBar
