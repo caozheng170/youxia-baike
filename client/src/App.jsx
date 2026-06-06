@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SearchBar from './components/SearchBar';
 import PageView from './components/PageView';
 import ClickOverlay from './components/ClickOverlay';
@@ -42,6 +42,10 @@ export default function App() {
   const handleRegenerate = (query) => {
     generate(query, provider);
   };
+
+  useEffect(() => {
+    document.title = '游侠百科';
+  }, []);
 
   return (
     <div className="app">
