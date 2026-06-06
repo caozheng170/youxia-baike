@@ -10,7 +10,16 @@ export default function SearchBar({
   onClear,
 }) {
   const [query, setQuery] = React.useState('');
+  const [isMobile, setIsMobile] = React.useState(false);
   const hasTrail = breadcrumb && breadcrumb.length > 0;
+
+  React.useEffect(() => {
+    const mq = window.matchMedia('(max-width: 640px)');
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -61,7 +70,11 @@ export default function SearchBar({
             <input
               type="text"
               className="search-input"
-              placeholder="Explore anything... (e.g. solar system, coffee making, quantum physics)"
+              placeholder={
+                isMobile
+                  ? 'Search any topic…'
+                  : 'Explore anything... (e.g. solar system, coffee making, quantum physics)'
+              }
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               disabled={isGenerating}
@@ -91,6 +104,7 @@ export default function SearchBar({
             type="submit"
             className="search-btn"
             disabled={!query.trim() || isGenerating}
+            aria-label="Explore"
           >
             {isGenerating ? <span className="spinner" /> : 'Explore'}
           </button>
